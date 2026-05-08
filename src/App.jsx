@@ -13,90 +13,129 @@ export default function App() {
   const { manualRefresh, positionCount } = useISSTracker()
 
   return (
-    <div className="min-h-screen p-4 sm:p-8" style={{ backgroundColor: '#f5f2e8' }}>
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen pb-12 transition-all duration-500 bg-[var(--bg-main)]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-8 pt-8 space-y-8">
 
         {/* ── Header ── */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <p className="text-[10px] font-black text-sky-600 uppercase tracking-[0.2em] mb-1">
-              Mission Control Dashboard
-            </p>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-              Real-Time ISS and News Intelligence
-            </h1>
+        <header className="glass-card p-6 flex flex-col sm:flex-row justify-between items-center gap-6 animate-fadeIn">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 animate-pulse-soft">
+              <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-blue-500 uppercase tracking-[0.25em] mb-0.5">
+                Global Operations Center
+              </p>
+              <h1 className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">
+                ISS Intelligence <span className="text-blue-500">&</span> News Dashboard
+              </h1>
+            </div>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex flex-col items-end">
+              <span className="text-[10px] font-bold text-[var(--text-secondary)] uppercase">System Status</span>
+              <span className="text-xs font-bold text-green-500 flex items-center gap-1.5">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                ALL SYSTEMS NOMINAL
+              </span>
+            </div>
+            <div className="h-10 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2 hidden md:block"></div>
+            <ThemeToggle />
+          </div>
         </header>
 
-        {/* ── ISS Section ── */}
-        <section>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-            {/* Left: Stats + Map */}
-            <div className="lg:col-span-8 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-slate-800">ISS Live Tracking</h2>
-                <div className="flex items-center gap-3">
-                  <button onClick={manualRefresh} className="btn-primary text-xs">
-                    Refresh Now
-                  </button>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    Auto-Refresh: ON
-                  </span>
-                </div>
+        {/* ── Main Content Grid ── */}
+        <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Left Column (8 units) */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Tracking Header */}
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-6 bg-blue-500 rounded-full"></div>
+                <h2 className="text-xl font-bold text-[var(--text-primary)]">Orbital Tracking</h2>
               </div>
-
-              {/* Stat Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <ErrorBoundary>
-                  <ISSStats positionCount={positionCount} onRefresh={manualRefresh} />
-                </ErrorBoundary>
-              </div>
-
-              {/* Map */}
-              <div className="h-[380px]">
-                <ErrorBoundary>
-                  <ISSMap />
-                </ErrorBoundary>
-              </div>
+              <button 
+                onClick={manualRefresh} 
+                className="btn-secondary-premium !py-1.5 !px-4 text-xs group"
+              >
+                <svg className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Sync Data
+              </button>
             </div>
 
-            {/* Right: Speed Chart + Donut + Crew */}
-            <div className="lg:col-span-4 space-y-6">
-              <section>
-                <h2 className="text-lg font-bold text-slate-800 mb-3">ISS Speed Trend</h2>
-                <div className="h-[260px]">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <ErrorBoundary>
+                <ISSStats positionCount={positionCount} onRefresh={manualRefresh} />
+              </ErrorBoundary>
+            </div>
+
+            {/* Map Container */}
+            <div className="glass-card p-2 h-[450px]">
+              <ErrorBoundary>
+                <ISSMap />
+              </ErrorBoundary>
+            </div>
+
+            {/* News Feed */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 px-2">
+                <div className="w-2 h-6 bg-orange-500 rounded-full"></div>
+                <h2 className="text-xl font-bold text-[var(--text-primary)]">Global Intelligence Feed</h2>
+              </div>
+              <ErrorBoundary>
+                <NewsFeed />
+              </ErrorBoundary>
+            </div>
+          </div>
+
+          {/* Right Column (4 units) */}
+          <aside className="lg:col-span-4 space-y-8">
+            {/* Charts Section */}
+            <section className="glass-card p-6 space-y-8">
+              <div>
+                <h3 className="text-sm font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-4">Velocity Trend</h3>
+                <div className="h-[240px]">
                   <SpeedChart />
                 </div>
-              </section>
-
-              <section>
-                <div className="h-[260px]">
+              </div>
+              
+              <div className="pt-8 border-t border-[var(--card-border)]">
+                <h3 className="text-sm font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-4">Topic Distribution</h3>
+                <div className="h-[240px]">
                   <ErrorBoundary>
                     <NewsDonutChart />
                   </ErrorBoundary>
                 </div>
-              </section>
+              </div>
+            </section>
 
+            {/* Crew Section */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-3 px-2">
+                <div className="w-2 h-6 bg-purple-500 rounded-full"></div>
+                <h2 className="text-xl font-bold text-[var(--text-primary)]">Station Personnel</h2>
+              </div>
               <ErrorBoundary>
                 <AstronautList />
               </ErrorBoundary>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Breaking News Section ── */}
-        <section className="card p-6">
-          <ErrorBoundary>
-            <NewsFeed />
-          </ErrorBoundary>
-        </section>
+            </section>
+          </aside>
+        </main>
 
         {/* ── Footer ── */}
-        <footer className="pt-4 border-t border-slate-200 flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-          <span>ISS Live Data System v1.0.4</span>
-          <span>© 2026 Mission Control</span>
+        <footer className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-[0.2em]">
+          <div className="flex items-center gap-4">
+            <span>Core System v2.1.0</span>
+            <span className="w-1 h-1 bg-slate-400 rounded-full"></span>
+            <span>Last Update: {new Date().toLocaleTimeString()}</span>
+          </div>
+          <span>Mission Control © 2026 Space Intelligence Agency</span>
         </footer>
       </div>
 
@@ -105,3 +144,4 @@ export default function App() {
     </div>
   )
 }
+
