@@ -5,22 +5,22 @@ import { useNews, CATEGORIES } from '../../context/NewsContext'
 ChartJS.register(ArcElement, Tooltip, Legend)
 
 const COLORS = {
-  technology: { bg: 'rgba(99,102,241,0.85)', border: '#6366f1' },
-  science:    { bg: 'rgba(16,185,129,0.85)', border: '#10b981' },
+  technology: { bg: 'rgba(99,102,241,0.85)',  border: '#6366f1' },
+  science:    { bg: 'rgba(16,185,129,0.85)',  border: '#10b981' },
 }
 
 export default function NewsDonutChart() {
   const { articles, setDonutFilter, donutFilter, setActiveCategory } = useNews()
 
   const counts = CATEGORIES.map(cat => articles[cat]?.length || 0)
-  const total = counts.reduce((a, b) => a + b, 0)
+  const total  = counts.reduce((a, b) => a + b, 0)
 
   const data = {
     labels: CATEGORIES.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
     datasets: [{
       data: counts,
-      backgroundColor: CATEGORIES.map(c => COLORS[c].bg),
-      borderColor: CATEGORIES.map(c => COLORS[c].border),
+      backgroundColor: CATEGORIES.map(c => COLORS[c]?.bg  || '#94a3b8'),
+      borderColor:     CATEGORIES.map(c => COLORS[c]?.border || '#94a3b8'),
       borderWidth: 2,
       hoverOffset: 8,
     }],
@@ -35,8 +35,8 @@ export default function NewsDonutChart() {
         position: 'bottom',
         labels: {
           color: '#94a3b8',
-          padding: 16,
-          font: { size: 12, family: 'Inter' },
+          padding: 14,
+          font: { size: 11, family: 'Inter' },
           usePointStyle: true,
         },
       },
@@ -67,23 +67,23 @@ export default function NewsDonutChart() {
   }
 
   return (
-    <div className="card p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="section-title flex items-center gap-2">📊 News Distribution</h3>
+    <div className="card p-4 h-full flex flex-col">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-sm font-bold text-slate-700">📊 News Distribution</h3>
         {donutFilter && (
           <button
             onClick={() => setDonutFilter(null)}
-            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+            className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
           >
-            ✕ Clear filter
+            ✕ Clear
           </button>
         )}
       </div>
-      <div className="text-center text-xs text-slate-400 dark:text-slate-500">Click a slice to filter articles</div>
-      <div style={{ height: 200 }}>
+      <p className="text-[10px] text-slate-400 mb-2">Click a slice to filter articles</p>
+      <div className="flex-1">
         {total === 0 ? (
           <div className="flex items-center justify-center h-full text-slate-400 text-sm">
-            No data yet
+            No data
           </div>
         ) : (
           <Doughnut data={data} options={options} />

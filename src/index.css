@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,22 +13,56 @@
     --text-secondary: #5c5c5c;
     --accent: #0088cc;
   }
+
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     background-color: var(--bg-main) !important;
     color: var(--text-primary) !important;
     font-family: 'Inter', system-ui, sans-serif;
   }
+
+  .dark body {
+    background-color: #0f172a !important;
+    color: #f1f5f9 !important;
+  }
 }
 
 @layer components {
+  /* ── Cards ── */
   .card {
     @apply bg-[var(--card-bg)] rounded-xl border border-[var(--card-border)] shadow-sm;
   }
-  .btn-primary {
-    @apply bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-medium px-4 py-1.5 rounded-lg transition-all text-sm shadow-sm;
+  .dark .card {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
   }
+
+  .card-glass {
+    @apply rounded-2xl border border-[var(--card-border)] shadow-xl;
+    background: rgba(255, 253, 245, 0.97);
+    backdrop-filter: blur(12px);
+  }
+  .dark .card-glass {
+    background: rgba(30, 41, 59, 0.97) !important;
+    border-color: #334155 !important;
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-medium px-4 py-1.5 rounded-lg transition-all text-sm shadow-sm active:scale-95;
+  }
+  .dark .btn-primary {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #334155 !important;
+  }
+
+  /* ── Stat Cards ── */
   .stat-card {
-    @apply card p-4 flex flex-col;
+    @apply card p-4 flex flex-col gap-1;
   }
   .stat-label {
     @apply text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest;
@@ -34,15 +70,80 @@
   .stat-value {
     @apply text-lg font-bold text-[var(--text-primary)];
   }
+
+  /* ── Badges ── */
+  .badge {
+    @apply text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full;
+  }
+
+  /* ── Section Titles ── */
+  .section-title {
+    @apply text-sm font-bold text-slate-700 uppercase tracking-wide;
+  }
+  .dark .section-title {
+    color: #cbd5e1 !important;
+  }
+
+  /* ── Input Field ── */
+  .input-field {
+    @apply bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 transition-all;
+  }
+  .dark .input-field {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+  }
+
+  /* ── Skeleton Loader ── */
+  .skeleton {
+    @apply animate-pulse bg-slate-200 dark:bg-slate-700 rounded;
+  }
 }
 
-/* Leaflet overrides */
+/* ── Leaflet Map Overrides ── */
 .leaflet-container {
-  @apply rounded-xl border border-[var(--card-border)];
-  background: #cbd5e1 !important;
+  @apply rounded-xl;
+  border: 1px solid var(--card-border);
+  background: #d1e8f5 !important;
+}
+.leaflet-tile-pane {
+  filter: saturate(0.7) brightness(1.05);
 }
 
-/* Scrollbars */
-*::-webkit-scrollbar { width: 4px; }
+/* ── Typing Indicator Dots ── */
+.typing-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #94a3b8;
+  animation: bounceDot 1.2s infinite ease-in-out;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Scrollbars ── */
+*::-webkit-scrollbar { width: 4px; height: 4px; }
 *::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+.dark *::-webkit-scrollbar-thumb { background: #334155; }
+
+/* ── Leaflet Attribution ── */
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  background: rgba(255,255,255,0.7) !important;
+}
+
+/* ── Animate slide-up for chatbot window ── */
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes bounceDot {
+  0%, 80%, 100% { transform: scale(0); }
+  40%           { transform: scale(1); }
+}
