@@ -25,13 +25,19 @@ export function useNewsLoader() {
       if (!API_KEY || API_KEY === 'your_newsapi_key_here') {
         throw new Error('NO_API_KEY')
       }
-      const url = `https://newsapi.org/v2/everything?q=${category}&pageSize=5&sortBy=publishedAt&language=en&apiKey=${API_KEY}`
+      const targetUrl = `https://newsapi.org/v2/everything?q=${category}&pageSize=5&sortBy=publishedAt&language=en&apiKey=${API_KEY}`
+      const url = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`
       const res = await fetch(url)
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.message || `HTTP ${res.status}`)
+        throw new Error(`HTTP ${res.status}`)
       }
-      const data = await res.json()
+      const wrapper = await res.json()
+      const data = JSON.parse(wrapper.contents)
+
+      if (data.status === 'error') {
+        throw new Error(data.message || 'NewsAPI error')
+      }
+
       const articles = (data.articles || []).filter(a => a.title && a.title !== '[Removed]')
       setCache(cacheKey, articles)
       setArticlesForCategory(category, articles)

@@ -4,7 +4,7 @@ import { calculateSpeed } from '../utils/haversine'
 import { reverseGeocode } from '../utils/geocoding'
 import toast from 'react-hot-toast'
 
-const CORS_PROXY = 'https://api.allorigins.win/raw?url='
+const CORS_PROXY = 'https://api.allorigins.win/get?url='
 const ISS_NOW = `${CORS_PROXY}${encodeURIComponent('http://api.open-notify.org/iss-now.json')}`
 const ASTROS = `${CORS_PROXY}${encodeURIComponent('http://api.open-notify.org/astros.json')}`
 const POLL_INTERVAL = 15000
@@ -27,7 +27,8 @@ export function useISSTracker() {
   const fetchAstronauts = useCallback(async () => {
     try {
       const res = await fetch(ASTROS)
-      const data = await res.json()
+      const wrapper = await res.json()
+      const data = JSON.parse(wrapper.contents)
       setAstronauts({ number: data.number, people: data.people || [] })
     } catch (e) {
       console.warn('Astros fetch error:', e)
@@ -39,7 +40,8 @@ export function useISSTracker() {
       setError(null)
       const res = await fetch(ISS_NOW)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
+      const wrapper = await res.json()
+      const data = JSON.parse(wrapper.contents)
       const pos = {
         latitude: parseFloat(data.iss_position.latitude),
         longitude: parseFloat(data.iss_position.longitude),
