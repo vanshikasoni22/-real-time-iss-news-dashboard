@@ -25,15 +25,29 @@ export function useNewsLoader() {
       if (!API_KEY || API_KEY.startsWith('your_')) {
         throw new Error('NO_API_KEY')
       }
-      // Currents API endpoint
+      // NewsData.io endpoint
       const targetUrl = `https://api.currentsapi.services/v1/search?keywords=${category}&language=en&apiKey=${API_KEY}`
-      const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
       
-      const res = await fetch(url)
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`)
+      let data = null
+      const proxies = [
+        url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        url => `https://thingproxy.freeboard.io/fetch/${url}`
+      ]
+
+      for (const proxy of proxies) {
+        try {
+          const res = await fetch(proxy(targetUrl))
+          if (res.ok) {
+            data = await res.json()
+            break
+          }
+        } catch (e) {
+          console.warn('Proxy failed:', e)
+        }
       }
-      const data = await res.json()
+
+      if (!data) throw new Error('Could not fetch news from any proxy')
 
       if (data.status !== 'ok') {
         throw new Error(data.message || 'Currents API error')
