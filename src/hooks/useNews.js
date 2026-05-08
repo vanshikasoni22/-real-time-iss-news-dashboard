@@ -22,22 +22,33 @@ export function useNewsLoader() {
     setErrorForCategory(category, null)
 
     try {
-      if (!API_KEY || API_KEY === 'your_newsapi_key_here') {
+      if (!API_KEY || API_KEY.startsWith('your_')) {
         throw new Error('NO_API_KEY')
       }
-      const targetUrl = `https://newsapi.org/v2/everything?q=${category}&pageSize=5&sortBy=publishedAt&language=en&apiKey=${API_KEY}`
+      // NewsData.io endpoint
+      const targetUrl = `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=${category}&language=en`
       const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+      
       const res = await fetch(url)
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`)
       }
       const data = await res.json()
 
-      if (data.status === 'error') {
-        throw new Error(data.message || 'NewsAPI error')
+      if (data.status !== 'success') {
+        throw new Error(data.message || 'News API error')
       }
 
-      const articles = (data.articles || []).filter(a => a.title && a.title !== '[Removed]')
+      // Map NewsData.io format to our NewsCard format
+      const articles = (data.results || []).map(item => ({
+        title: item.title,
+        source: { name: item.source_id },
+        author: item.creator?.[0] || 'Unknown',
+        publishedAt: item.pubDate,
+        urlToImage: item.image_url,
+        description: item.description,
+        url: item.link
+      })).filter(a => a.title)
       setCache(cacheKey, articles)
       setArticlesForCategory(category, articles)
       toast.success(`${category.charAt(0).toUpperCase() + category.slice(1)} news updated`)
