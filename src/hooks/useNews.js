@@ -26,13 +26,12 @@ export function useNewsLoader() {
         throw new Error('NO_API_KEY')
       }
       const targetUrl = `https://newsapi.org/v2/everything?q=${category}&pageSize=5&sortBy=publishedAt&language=en&apiKey=${API_KEY}`
-      const url = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`
+      const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
       const res = await fetch(url)
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`)
       }
-      const wrapper = await res.json()
-      const data = JSON.parse(wrapper.contents)
+      const data = await res.json()
 
       if (data.status === 'error') {
         throw new Error(data.message || 'NewsAPI error')
