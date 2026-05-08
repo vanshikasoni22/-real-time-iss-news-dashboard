@@ -30,8 +30,7 @@ export default function Chatbot({ issData, articles }) {
     const question = input.trim();
     if (!question || typing) return;
 
-    const nextUserMessage = { id: crypto.randomUUID(), role: 'user', content: question };
-    setMessages((current) => [...current, nextUserMessage].slice(-30));
+    setMessages((current) => [...current, { id: crypto.randomUUID(), role: 'user', content: question }].slice(-30));
     setInput('');
     setTyping(true);
 
