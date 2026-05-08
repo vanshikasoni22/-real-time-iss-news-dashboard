@@ -4,23 +4,8 @@ import { calculateSpeed } from '../utils/haversine'
 import { reverseGeocode } from '../utils/geocoding'
 import toast from 'react-hot-toast'
 
-const PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://thingproxy.freeboard.io/fetch/${url}`
-]
-
-async function fetchWithFallback(targetUrl) {
-  for (const proxy of PROXIES) {
-    try {
-      const res = await fetch(proxy(targetUrl))
-      if (res.ok) return await res.json()
-    } catch (e) {
-      console.warn(`Proxy failed: ${proxy(targetUrl)}`, e)
-    }
-  }
-  throw new Error('All proxies failed')
-}
+const ISS_URL = 'https://api.wheretheiss.at/v1/satellites/25544'
+const ASTROS_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('http://api.open-notify.org/astros.json')
 
 export function useISSTracker() {
   const {
@@ -39,7 +24,8 @@ export function useISSTracker() {
 
   const fetchAstronauts = useCallback(async () => {
     try {
-      const data = await fetchWithFallback('http://api.open-notify.org/astros.json')
+      const res = await fetch(ASTROS_URL)
+      const data = await res.json()
       setAstronauts({ number: data.number, people: data.people || [] })
     } catch (e) {
       console.warn('Astros fetch error:', e)
@@ -49,12 +35,21 @@ export function useISSTracker() {
   const fetchISS = useCallback(async (showToast = false) => {
     try {
       setError(null)
-      const data = await fetchWithFallback('http://api.open-notify.org/iss-now.json')
+      const res = await fetch(ISS_URL)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      
       const pos = {
-        latitude: parseFloat(data.iss_position.latitude),
-        longitude: parseFloat(data.iss_position.longitude),
+        latitude: parseFloat(data.latitude),
+        longitude: parseFloat(data.longitude),
         timestamp: data.timestamp,
       }
+
+      // The API provides velocity in mph/kph directly!
+      setSpeed(Math.round(data.velocity))
+      
+      setPosition(pos)
+      setLoading(false)
 
       // Calculate speed
       const now = Date.now()
