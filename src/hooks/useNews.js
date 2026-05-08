@@ -25,8 +25,8 @@ export function useNewsLoader() {
       if (!API_KEY || API_KEY.startsWith('your_')) {
         throw new Error('NO_API_KEY')
       }
-      // NewsData.io endpoint
-      const targetUrl = `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=${category}&language=en`
+      // Currents API endpoint
+      const targetUrl = `https://api.currentsapi.services/v1/search?keywords=${category}&language=en&apiKey=${API_KEY}`
       const url = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
       
       const res = await fetch(url)
@@ -35,19 +35,19 @@ export function useNewsLoader() {
       }
       const data = await res.json()
 
-      if (data.status !== 'success') {
-        throw new Error(data.message || 'News API error')
+      if (data.status !== 'ok') {
+        throw new Error(data.message || 'Currents API error')
       }
 
-      // Map NewsData.io format to our NewsCard format
-      const articles = (data.results || []).map(item => ({
+      // Map Currents API format to our NewsCard format
+      const articles = (data.news || []).map(item => ({
         title: item.title,
-        source: { name: item.source_id },
-        author: item.creator?.[0] || 'Unknown',
-        publishedAt: item.pubDate,
-        urlToImage: item.image_url,
+        source: { name: item.author || 'Currents' },
+        author: item.author || 'Unknown',
+        publishedAt: item.published,
+        urlToImage: item.image !== 'None' ? item.image : null,
         description: item.description,
-        url: item.link
+        url: item.url
       })).filter(a => a.title)
       setCache(cacheKey, articles)
       setArticlesForCategory(category, articles)
