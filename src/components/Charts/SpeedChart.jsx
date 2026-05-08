@@ -11,16 +11,18 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 export default function SpeedChart() {
   const { speedHistory } = useISS()
 
+  const safeHistory = speedHistory || []
+
   const data = {
-    labels: speedHistory.map(s => s.time),
+    labels: safeHistory.map(s => s?.time || ''),
     datasets: [{
-      label: 'ISS Speed (km/h)',
-      data: speedHistory.map(s => s.speed),
-      borderColor: '#e11d48', // Red line
+      label: 'Speed',
+      data: safeHistory.map(s => s?.speed || 0),
+      borderColor: '#e11d48',
       backgroundColor: 'rgba(225, 29, 72, 0.05)',
       borderWidth: 2,
       pointRadius: 0,
-      tension: 0.3,
+      tension: 0.4,
       fill: true,
     }],
   }
@@ -30,13 +32,13 @@ export default function SpeedChart() {
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-      x: { display: true, ticks: { display: true, maxRotation: 45, minRotation: 45, font: { size: 8 } } },
-      y: { display: true, suggestedMin: 24500, suggestedMax: 25100, ticks: { font: { size: 8 } } }
+      x: { display: true, ticks: { font: { size: 7 } } },
+      y: { display: true, ticks: { font: { size: 7 } } }
     },
   }
 
   return (
-    <div className="card p-4 h-full">
+    <div className="card p-4 h-full bg-white">
       <Line data={data} options={options} />
     </div>
   )

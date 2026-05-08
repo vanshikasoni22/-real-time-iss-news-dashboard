@@ -18,13 +18,12 @@ const issIcon = L.divIcon({
   className: '',
   iconSize: [48, 48],
   iconAnchor: [24, 24],
-  popupAnchor: [0, -24],
 })
 
 function MapPanner({ position }) {
   const map = useMap()
   useEffect(() => {
-    if (position) {
+    if (position?.latitude && position?.longitude) {
       map.flyTo([position.latitude, position.longitude], map.getZoom(), { duration: 1.2 })
     }
   }, [position, map])
@@ -34,57 +33,45 @@ function MapPanner({ position }) {
 export default function ISSMap() {
   const { position, history, speed, location, loading } = useISS()
 
-  const polylinePositions = history.map(p => [p.latitude, p.longitude])
-  const center = position
-    ? [position.latitude, position.longitude]
-    : [0, 0]
+  // Safety check to prevent crash if data is missing
+  if (!position) return <div className="card h-full bg-slate-100 flex items-center justify-center text-xs">Loading Map Data...</div>
+
+  const polylinePositions = (history || []).map(p => [p.latitude, p.longitude])
+  const center = [position.latitude, position.longitude]
 
   return (
-    <div className="card overflow-hidden" style={{ minHeight: 360 }}>
-      {loading && !position ? (
-        <div className="skeleton w-full" style={{ minHeight: 360 }} />
-      ) : (
-        <MapContainer
-          center={center}
-          zoom={3}
-          style={{ height: 360, width: '100%' }}
-          zoomControl={true}
-          scrollWheelZoom={false}
-          attributionControl={false}
-        >
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; CartoDB'
+    <div className="card overflow-hidden h-full">
+      <MapContainer
+        center={center}
+        zoom={3}
+        style={{ height: '100%', width: '100%' }}
+        zoomControl={true}
+        scrollWheelZoom={false}
+        attributionControl={false}
+      >
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; CartoDB'
+        />
+
+        {polylinePositions.length > 1 && (
+          <Polyline
+            positions={polylinePositions}
+            color="#6366f1"
+            weight={2}
+            opacity={0.5}
+            dashArray="5, 10"
           />
+        )}
 
-          {/* Trajectory polyline */}
-          {polylinePositions.length > 1 && (
-            <Polyline
-              positions={polylinePositions}
-              color="#6366f1"
-              weight={2.5}
-              opacity={0.7}
-              dashArray="6 6"
-            />
-          )}
+        <Marker position={center} icon={issIcon}>
+          <Tooltip permanent direction="top" offset={[0, -20]}>
+            <div className="text-[10px] font-bold">🛸 ISS POS</div>
+          </Tooltip>
+        </Marker>
 
-          {/* ISS Marker */}
-          {position && (
-            <Marker position={[position.latitude, position.longitude]} icon={issIcon}>
-              <Tooltip permanent direction="top" offset={[0, -28]} className="!bg-slate-900 !text-white !border-brand-500 !rounded-xl !text-xs !font-medium">
-                <div className="space-y-0.5 py-0.5">
-                  <div>🛸 ISS Live</div>
-                  <div>📍 {position.latitude.toFixed(3)}°, {position.longitude.toFixed(3)}°</div>
-                  <div>⚡ {speed.toLocaleString()} km/h</div>
-                  {location && <div>🌍 {location}</div>}
-                </div>
-              </Tooltip>
-            </Marker>
-          )}
-
-          <MapPanner position={position} />
-        </MapContainer>
-      )}
+        <MapPanner position={position} />
+      </MapContainer>
     </div>
   )
 }
