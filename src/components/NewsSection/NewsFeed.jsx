@@ -1,121 +1,51 @@
-import { useEffect } from 'react'
-import { useNews, CATEGORIES } from '../../context/NewsContext'
-import { useNewsLoader } from '../../hooks/useNews'
-import NewsCard from './NewsCard'
-import { SkeletonCard } from '../UI/Skeleton'
+import { useNews } from '../../context/NewsContext'
 
 export default function NewsFeed() {
-  const {
-    filteredArticles, loading, error,
-    activeCategory, setActiveCategory,
-    searchQuery, setSearchQuery,
-    sortBy, setSortBy,
-    donutFilter, setDonutFilter,
-  } = useNews()
-
-  const { fetchCategory, fetchAll } = useNewsLoader()
-
-  // Initial load
-  useEffect(() => { fetchAll() }, [fetchAll])
-
-  const displayCategory = donutFilter || activeCategory
+  const { filteredArticles, activeCategory, setActiveCategory, searchQuery, setSearchQuery } = useNews()
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h2 className="section-title flex items-center gap-2">📰 News Feed</h2>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button id="news-refresh-btn" onClick={() => fetchCategory(displayCategory, true)} className="btn-ghost text-xs">
-            🔄 Refresh
-          </button>
-          <select
-            id="news-sort-select"
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value)}
-            className="input-field !w-auto text-xs py-1.5 px-2.5"
-          >
-            <option value="date">Sort: Date</option>
-            <option value="source">Sort: Source</option>
-          </select>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Breaking News</h2>
+        <div className="flex items-center gap-2">
+          <button className="btn-primary text-xs">Refresh</button>
         </div>
       </div>
 
-      {/* Search */}
-      <input
-        id="news-search-input"
-        type="search"
-        value={searchQuery}
-        onChange={e => setSearchQuery(e.target.value)}
-        placeholder="🔍 Search articles..."
-        className="input-field"
-      />
+      <div className="flex flex-col sm:flex-row gap-4">
+        <input 
+          type="text"
+          placeholder="Search title, source, author..."
+          className="flex-1 bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <select className="bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm">
+          <option>Sort by Date</option>
+        </select>
+      </div>
 
-      {/* Category tabs */}
-      <div className="flex gap-2 flex-wrap">
-        {donutFilter && (
-          <button
-            onClick={() => setDonutFilter(null)}
-            className="badge bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 cursor-pointer hover:opacity-80 transition-opacity"
-          >
-            ✕ Clear chart filter
-          </button>
-        )}
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            id={`news-tab-${cat}`}
-            onClick={() => { setActiveCategory(cat); setDonutFilter(null) }}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 capitalize
-              ${displayCategory === cat && !donutFilter
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-              }`}
-          >
-            {cat === 'technology' ? '💻' : '🔬'} {cat}
-          </button>
+      <div className="space-y-2">
+        {filteredArticles.map((article, i) => (
+          <div key={i} className="group card p-3 flex items-center justify-between hover:border-sky-300 transition-all cursor-pointer">
+            <div className="flex items-center gap-4">
+              <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-[10px] font-bold text-white">
+                {i + 1}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black text-sky-600 uppercase tracking-widest">{article.source.name}</span>
+                  <span className="text-[10px] font-bold text-slate-400">{new Date(article.publishedAt).toLocaleString()}</span>
+                </div>
+                <h3 className="text-sm font-bold text-slate-800">{article.title}</h3>
+              </div>
+            </div>
+            <div className="text-slate-300 group-hover:text-sky-500 transition-colors">
+              ▼
+            </div>
+          </div>
         ))}
       </div>
-
-      {/* Error state */}
-      {error[displayCategory] && (
-        <div className="card p-4 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
-          <p className="text-sm text-red-700 dark:text-red-400">⚠️ {error[displayCategory]}</p>
-          <button
-            className="btn-primary mt-2 text-xs bg-red-600 hover:bg-red-700"
-            onClick={() => fetchCategory(displayCategory, true)}
-          >
-            🔄 Retry
-          </button>
-        </div>
-      )}
-
-      {/* Loading skeletons */}
-      {loading[displayCategory] && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[0, 1, 2].map(i => <SkeletonCard key={i} lines={4} />)}
-        </div>
-      )}
-
-      {/* Articles grid */}
-      {!loading[displayCategory] && filteredArticles.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredArticles.map((article, i) => (
-            <NewsCard key={article.url || i} article={article} />
-          ))}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!loading[displayCategory] && filteredArticles.length === 0 && !error[displayCategory] && (
-        <div className="card p-10 text-center text-slate-400 dark:text-slate-500">
-          <div className="text-4xl mb-3">📭</div>
-          <p className="font-medium">No articles found</p>
-          <p className="text-sm mt-1">
-            {searchQuery ? 'Try a different search term' : 'Add your NewsAPI key to load articles'}
-          </p>
-        </div>
-      )}
     </div>
   )
 }
