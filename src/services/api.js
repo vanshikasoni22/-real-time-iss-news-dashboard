@@ -19,36 +19,35 @@ export async function fetchAstronauts() {
 }
 
 export async function reverseGeocode(lat, lon) {
-  const { data } = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+  const { data } = await axios.get('/api/geocode', {
     params: {
-      format: 'jsonv2',
       lat,
       lon,
       zoom: 5
-    },
-    headers: {
-      Accept: 'application/json'
     }
   });
+
+  if (data.status === 'error') {
+    throw new Error(data.message || 'Unable to reverse geocode ISS position.');
+  }
 
   return data.display_name || data.name || 'Over open ocean';
 }
 
 export async function fetchNewsCategory(category) {
-  const apiKey = import.meta.env.VITE_NEWS_API_KEY;
-  if (!apiKey || apiKey === 'your_newsapi_key_here') {
-    throw new Error('Add VITE_NEWS_API_KEY to .env to load live news.');
-  }
-
-  const { data } = await axios.get('https://newsapi.org/v2/everything', {
+  const { data } = await axios.get('/api/news', {
     params: {
+      endpoint: 'everything',
       q: category,
       pageSize: 5,
       sortBy: 'publishedAt',
-      language: 'en',
-      apiKey
+      language: 'en'
     }
   });
+
+  if (data.status === 'error') {
+    throw new Error(data.message || `Unable to load ${category} news.`);
+  }
 
   return (data.articles || []).map((article) => ({
     ...article,
@@ -57,28 +56,19 @@ export async function fetchNewsCategory(category) {
 }
 
 export async function askHuggingFace(prompt) {
-  const token = import.meta.env.VITE_HF_TOKEN;
-  if (!token || token === 'your_huggingface_token_here') {
-    throw new Error('Add VITE_HF_TOKEN to .env to use the assistant.');
-  }
-
-  const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
+  const response = await fetch('/api/chat', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      inputs: prompt,
-      parameters: { max_new_tokens: 300 }
-    })
+    body: JSON.stringify({ prompt })
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error(`Assistant request failed with status ${response.status}`);
+    throw new Error(data.message || `Assistant request failed with status ${response.status}`);
   }
 
-  const data = await response.json();
-  const text = Array.isArray(data) ? data[0]?.generated_text : data.generated_text;
-  return text?.replace(prompt, '').trim() || 'I could not produce an answer from the current dashboard data.';
+  return data.text || 'I could not produce an answer from the current dashboard data.';
 }
